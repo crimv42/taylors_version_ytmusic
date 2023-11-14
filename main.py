@@ -15,6 +15,11 @@ map_1989_DLX = {}
 #### Get Album Info
 
 ## Fearless
+# Fearless Stolen
+stolen_fearless = ytmusic.get_album("MPREb_WOymlv5h6Sg")
+# Fearless Platinum Stolen
+stolen_fearless_plat = ytmusic.get_album("MPREb_T8VII3ez1rZ")
+
 
 ## Speak Now
 
@@ -92,7 +97,11 @@ def search_playlist(trackMap):
 
 def main():
     map_maker(map_1989, stolen_1989, tv_1989)
+    map_maker(map_1989_DLX, stolen_1989_DLX, tv_1989_DLX)
+    
+
     search_playlist(map_1989)
+    search_playlist(map_1989_DLX)
     # map_maker(map_1989_DLX, stolen_1989_DLX, tv_1989_DLX)
     # search_playlist(map_1989_DLX)
 
