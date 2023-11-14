@@ -10,20 +10,30 @@ map_fearless = {}
 map_red = {}
 map_speakNow = {}
 map_1989 = {}
+map_1989_DLX = {}
 
 #### Get Album Info
 
-# 1989 TV Info
-# 1989 TV Album ID = MPREb_5XXbjpMgJar
-tv_1989 = ytmusic.get_album("MPREb_ROOaFgqZpLS")
-# print_1989_tv = json.dumps(tv_1989, indent = 4)  
-# print(print_1989_tv)
+## Fearless
 
-# 1989 Stolen Info
+## Speak Now
+
+## Red
+
+## 1989
+# 1989 TV
+tv_1989 = ytmusic.get_album("MPREb_5XXbjpMgJar")
+# 1989 Stolen
+stolen_1989 = ytmusic.get_album("MPREb_K9GL6DCDUCq")
+
+# 1989 TV DLX Info
+# 1989 TV Album ID = MPREb_5XXbjpMgJar
+tv_1989_DLX = ytmusic.get_album("MPREb_ROOaFgqZpLS")
+
+# 1989 Stolen DLX Info
 # 1989 Stolen Album ID = MPREb_riIJjrsqo2I
-stolen_1989 = ytmusic.get_album("MPREb_riIJjrsqo2I")
-# print_1989_stolen = json.dumps(stolen_1989, indent = 4)  
-# print(print_1989_stolen)
+stolen_1989_DLX = ytmusic.get_album("MPREb_riIJjrsqo2I")
+
 
 #### End Get Album Info
 
@@ -32,10 +42,8 @@ playlist_list = ytmusic.get_library_playlists()
 
 
 #### Functions
-def map_maker(albumMap, stolen, tv):
+def map_maker(albumMap, stolenTracks, tvTracks):
     # mapName = ("map_" + albumName)
-    stolenTracks = ytmusic.get_album(stolen)
-    tvTracks = ytmusic.get_album(tv)
     for trackNum in range(len(stolenTracks["tracks"])):
         trackName = stolenTracks["tracks"][trackNum]["title"]
         if not "(Voice Memo)" in trackName and trackName in tvTracks["tracks"][trackNum]["title"]:
@@ -83,8 +91,10 @@ def search_playlist(trackMap):
                     replace_track(stolenId, trackMap[stolenId], setVideoId, playlistId)
 
 def main():
-    map_maker(map_1989, "MPREb_riIJjrsqo2I", "MPREb_ROOaFgqZpLS")
+    map_maker(map_1989, stolen_1989, tv_1989)
     search_playlist(map_1989)
+    # map_maker(map_1989_DLX, stolen_1989_DLX, tv_1989_DLX)
+    # search_playlist(map_1989_DLX)
 
 #### End Functions
 
