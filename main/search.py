@@ -1,5 +1,6 @@
 from ytmusicapi import YTMusic
 import json
+import re
 ytmusic = YTMusic("oauth.json")
 
 # search_results = ytmusic.search("Taylor Swift 1989")
@@ -20,7 +21,9 @@ fullAlbumDict = {album: {"tvAlbums": [], "stolenAlbums": []} for album in albumN
 
 search_results = ytmusic.get_album_browse_id("OLAK5uy_mGRDKgRDJtrpyw25zrYD7Rl56ACL1Oiy8")
 
-fearless_stolen_albums = []
+
+fearless_stolen_albums = ["OLAK5uy_muzVJZB508O6Pn7hAnKLX-0FhxVFC9Z9M", "OLAK5uy_lZdZBuYMGZcc5AJZmJeGN-390ORcsEtJU"]
+
 
 
 def getTrackNames(search_results):
@@ -30,7 +33,9 @@ def getTrackNames(search_results):
         trackTitle = (album["tracks"][trackNum]["title"])
         tvVideoId = (album["tracks"][trackNum]["videoId"])
     
-        if "[From The Vault]" not in trackTitle: 
+        if "[From The Vault]" not in trackTitle:
+            for k in trackTitle.split("\n"):
+                trackTitle = " ".join(re.findall(r"[a-zA-Z0-9]+", k))
             albumsDict[trackTitle] = {}
             albumsDict[trackTitle]["stolenVideoIds"] = []
             albumsDict[trackTitle]["tvVideoId"] = tvVideoId
@@ -43,8 +48,9 @@ albumDict = getTrackNames(search_results)
 for trackName in albumDict.keys():
     stolenTrackName = trackName.replace(" (Taylor’s Version)", "").strip()
     
-    for album in fearless_stolen_albums:
-        album = ytmusic.get_album(album)
+    for albumPlaylistId in fearless_stolen_albums:
+        albumId = ytmusic.get_album_browse_id(albumPlaylistId)
+        album = ytmusic.get_album(albumId)
         for trackNum in range(len(album["tracks"])):
             if stolenTrackName.lower() == album["tracks"][trackNum]["title"].lower():
                 albumDict[trackName]["stolenVideoIds"].append(album["tracks"][trackNum]["videoId"])
