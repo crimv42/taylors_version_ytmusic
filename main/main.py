@@ -98,7 +98,9 @@ def removeFromPlaylist(stolenTrackId, stolenSetVideoId, playlistId):
     stolenIdList[0]["setVideoId"] = stolenSetVideoId
     ytmusic.remove_playlist_items(playlistId=playlistId, videos=stolenIdList)
 
-def search_playlist(trackMap):
+def search_playlist(trackMap, fullDict):
+    flattened_list = [{"tvAlbums": album["tvAlbums"], "stolenAlbums": album["stolenAlbums"]} for album in fullDict.values()]
+    print(flattened_list)
     # Get each playlist and list tracks on that list while checking for a match in the stolenTrackList
     for playlist in playlist_list:
         playlistId = playlist["playlistId"]
@@ -106,28 +108,34 @@ def search_playlist(trackMap):
             continue
         current_playlist = ytmusic.get_playlist(playlist["playlistId"])
 
-        for track in current_playlist["tracks"]:
-            if track["videoId"] in trackMap:
-                if "setVideoId" in track:
-                    print(playlist["title"])
-                    setVideoId = track["setVideoId"]
-                    print(setVideoId)
+        # for track in current_playlist["tracks"]:
+        #     if track["videoId"] in trackMap:
+        #         trackVideoId = track["videoId"]
+        #         for album in fullDict.keys():
+        #             for trackName in fullDict[album].keys():
+        #                 if trackVideoId in fullDict[album][trackName]['stolenVideoIds']:
+        #                     print(trackName)
+        #                     print(fullDict[album][trackName]['stolenVideoIds'])
+        #                     if "setVideoId" in track:
+        #                         print(playlist["title"])
+        #                         setVideoId = track["setVideoId"]
+        #                         print(setVideoId)
   
-                    stolenId = track["videoId"]
+                    # stolenId = track["videoId"]
                     # replace_track(stolenId, trackMap[stolenId], setVideoId, playlistId)
 
 def main():
     fullAlbumDict = getTrackNames(albumDict)
     stolenTracks = []
-    for album in fullAlbumDict.keys():
-        for track in fullAlbumDict[album].keys():
-            if fullAlbumDict[album][track]["stolenVideoIds"] != [] and fullAlbumDict[album][track]["tvVideoId"] is not None:
-                stolenTracks.extend(fullAlbumDict[album][track]["stolenVideoIds"])
-                print(fullAlbumDict[album][track])
+    # for album in fullAlbumDict.keys():
+    #     for track in fullAlbumDict[album].keys():
+    #         if fullAlbumDict[album][track]["stolenVideoIds"] != [] and fullAlbumDict[album][track]["tvVideoId"] is not None:
+    #             stolenTracks.extend(fullAlbumDict[album][track]["stolenVideoIds"])
+    search_playlist(stolenTracks, fullAlbumDict)            
 
             # else:
             #     print(track)
-    print(stolenTracks)
+    
 
 
 
