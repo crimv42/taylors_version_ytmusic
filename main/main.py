@@ -20,10 +20,17 @@ tvAlbums = {
 stolenAlbums = {
     "fearless": ["OLAK5uy_muzVJZB508O6Pn7hAnKLX-0FhxVFC9Z9M", "OLAK5uy_lZdZBuYMGZcc5AJZmJeGN-390ORcsEtJU", "OLAK5uy_k9QEkm7Med3kLvYpQVSJXb_kSKyBOi8BE"],
     "speakNow": ["OLAK5uy_mDY0SYhu9rF7RdxJNVsJHTxSeKhD6DxVQ", "OLAK5uy_ma7jNM1HuRvhHdcqHGtyYWuB_r-_hqN-c"],
-    "red": ["OLAK5uy_ks84GLjEXPo9_C4dbTmyX99z5W0gwzFIk", "OLAK5uy_mnq56DGqyvOiaqJtjHxlksOHOJhKRCseU"],
+    "red": ["OLAK5uy_ks84GLjEXPo9_C4dbTmyX99z5W0gwzFIk", "OLAK5uy_mnq56DGqyvOiaqJtjHxlksOHOJhKRCseU", "OLAK5uy_kM-DjIbUEeP8hC3Wf1hKnW4GWQ104PhLE"],
     "nineteenEightyNine": ["OLAK5uy_n8mGmmk-aCPt9QQ9dOLQAHj0fDa7bBuLA", "OLAK5uy_mWbyIY5FoCOlKwTI9xXLoRXzv3VpoYv_g", "OLAK5uy_knugp3pcdtuz6Oil8vBHX9V5PkpVCnnK0"]
 }
 albumDict = {album: {"tvAlbums": tvAlbums[album], "stolenAlbums": stolenAlbums[album]} for album in albumNames}
+
+
+### Songs with issues currently
+# thelasttime
+# everythinghaschanged
+# badblood(featkendricklamar)
+
 
 #### Functions
 def getTrackNames(albumDict):
@@ -48,7 +55,12 @@ def getTrackNames(albumDict):
                     if "From The Vault" not in trackTitle:
                         # Clean and standardize the track title
                         trackTitle = " ".join(re.findall(r"[a-zA-Z0-9\(\)\&]+", trackTitle))
-                        trackTitle = trackTitle.replace(" (Taylor s Version)", "").strip()
+                        trackTitle = trackTitle.replace(" ", "").lower().replace("(taylorsversion)", "").replace("taylorsversion", "").replace("(originaldemorecording)", "").strip()
+
+                        ## Songs we need to filter out
+                        skipTracks = ["mine(popmix)", "ifthiswasamovie", "backtodecember(acousticversion)", "haunted(acousticversion)", "ronan"]
+                        if trackTitle in skipTracks:
+                            continue
 
                         # Initialize dictionary for the track if it does not exist
                         if trackTitle not in albumsDict[albumName]:
@@ -106,15 +118,18 @@ def search_playlist(trackMap):
 
 def main():
     fullAlbumDict = getTrackNames(albumDict)
+    stolenTracks = []
     for album in fullAlbumDict.keys():
         for track in fullAlbumDict[album].keys():
-            stolenVideoIds = fullAlbumDict[album][track]["stolenVideoIds"]
-            tvId = fullAlbumDict[album][track]["tvVideoId"]
-            if stolenVideoIds != [] and tvId != "":
-                search_playlist(stolenVideoIds)
-                # print(track)
-                # print(stolenVideoIds)
-                # print(tvId)
+            if fullAlbumDict[album][track]["stolenVideoIds"] != [] and fullAlbumDict[album][track]["tvVideoId"] is not None:
+                stolenTracks.extend(fullAlbumDict[album][track]["stolenVideoIds"])
+                print(fullAlbumDict[album][track])
+
+            # else:
+            #     print(track)
+    print(stolenTracks)
+
+
 
 
 #### End Functions
