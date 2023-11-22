@@ -1,11 +1,28 @@
 from ytmusicapi import YTMusic
-import json
 import re
-ytmusic = YTMusic("oauth.json")
+import subprocess
+import os
+
+# Check if oauth.json exists
+oauth_json_exists = os.path.exists("oauth.json")
+
+if not oauth_json_exists:
+    # Run the auth.sh script
+    auth_script_path = "./auth.sh"  # Replace with the actual path if not in the same directory
+    subprocess.run(auth_script_path, shell=True)
+
+    # Check if oauth.json was created after running the script
+    oauth_json_exists_after_script = os.path.exists("oauth.json")
+
+    if oauth_json_exists_after_script:
+        ytmusic = YTMusic("oauth.json")
+    else:
+        print("Error: auth.sh script may not have executed successfully.")
+else:
+    ytmusic = YTMusic("oauth.json")
 
 stolen_tracks_lists = []
 playlist_name = ""
-
 
 ## Playlist info
 playlist_list = ytmusic.get_library_playlists()
@@ -81,7 +98,10 @@ def replace_track(stolenTrackId, tvTrackId, stolenSetVideoId, playlistId):
     trackName = trackInfo["videoDetails"]["title"]
 
     print("Replacing " + trackName + ":\nOld ID: " + stolenTrackId + "\nNew Id: " + tvTrackId)
-    add_to_playlist(playlistId, tvTrackId, stolenSetVideoId)
+    try:
+        add_to_playlist(playlistId, tvTrackId, stolenSetVideoId)
+    except:
+        print("Could not add track. Probably already exists in playlist")
     removeFromPlaylist(stolenTrackId, stolenSetVideoId, playlistId)
 
 def add_to_playlist(playlist, tvTrackId, stolenSetVideoId):
@@ -98,49 +118,48 @@ def removeFromPlaylist(stolenTrackId, stolenSetVideoId, playlistId):
     stolenIdList[0]["setVideoId"] = stolenSetVideoId
     ytmusic.remove_playlist_items(playlistId=playlistId, videos=stolenIdList)
 
-def search_playlist(trackMap, fullDict):
-    flattened_list = [{"tvAlbums": album["tvAlbums"], "stolenAlbums": album["stolenAlbums"]} for album in fullDict.values()]
-    print(flattened_list)
+def flatten_dict(d):
+    flattened_dict = {}
+    for album, tracks in d.items():
+        for track, data in tracks.items():
+            flattened_dict[track] = data
+    return flattened_dict
+
+def search_playlist(stolenTracks, fullDict):
     # Get each playlist and list tracks on that list while checking for a match in the stolenTrackList
     for playlist in playlist_list:
         playlistId = playlist["playlistId"]
         if playlistId == "LM":
             continue
+        elif any(substring in playlist["title"] for substring in ["LM", "Recap", "Mix", "Presenting"]):
+            continue
         current_playlist = ytmusic.get_playlist(playlist["playlistId"])
 
-        # for track in current_playlist["tracks"]:
-        #     if track["videoId"] in trackMap:
-        #         trackVideoId = track["videoId"]
-        #         for album in fullDict.keys():
-        #             for trackName in fullDict[album].keys():
-        #                 if trackVideoId in fullDict[album][trackName]['stolenVideoIds']:
-        #                     print(trackName)
-        #                     print(fullDict[album][trackName]['stolenVideoIds'])
-        #                     if "setVideoId" in track:
-        #                         print(playlist["title"])
-        #                         setVideoId = track["setVideoId"]
-        #                         print(setVideoId)
-  
-                    # stolenId = track["videoId"]
-                    # replace_track(stolenId, trackMap[stolenId], setVideoId, playlistId)
+        for track in current_playlist["tracks"]:
+            if track["videoId"] in stolenTracks:
+                trackVideoId = track["videoId"]
+                for trackName in fullDict.keys():
+                    if trackVideoId in fullDict[trackName]['stolenVideoIds']:
+                        print(playlist["title"])
+                        print(trackName)
+                        tvVideoId = fullDict[trackName]['tvVideoId']
+                        if "setVideoId" in track:
+                            setVideoId = track["setVideoId"]
+                        print("\n")
+                        replace_track(trackVideoId, tvVideoId, setVideoId, playlistId)
 
 def main():
     fullAlbumDict = getTrackNames(albumDict)
+    songsDict = flatten_dict(fullAlbumDict)
     stolenTracks = []
-    # for album in fullAlbumDict.keys():
-    #     for track in fullAlbumDict[album].keys():
-    #         if fullAlbumDict[album][track]["stolenVideoIds"] != [] and fullAlbumDict[album][track]["tvVideoId"] is not None:
-    #             stolenTracks.extend(fullAlbumDict[album][track]["stolenVideoIds"])
-    search_playlist(stolenTracks, fullAlbumDict)            
-
-            # else:
-            #     print(track)
-    
-
-
-
+    for album in fullAlbumDict.keys():
+        for track in fullAlbumDict[album].keys():
+            if fullAlbumDict[album][track]["stolenVideoIds"] != [] and fullAlbumDict[album][track]["tvVideoId"] is not None:
+                stolenTracks.extend(fullAlbumDict[album][track]["stolenVideoIds"])
+    search_playlist(stolenTracks, songsDict)            
 
 #### End Functions
 
-main()
+if __name__ == "__main__":
+    main()
 
